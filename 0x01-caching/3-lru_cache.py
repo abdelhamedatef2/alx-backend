@@ -1,39 +1,37 @@
 #!/usr/bin/env python3
-"""Least Recently Used caching module.
-"""
-from collections import OrderedDict
-
+""" module represent first in first out """
 from base_caching import BaseCaching
+import time
 
 
 class LRUCache(BaseCaching):
-    """Represents an object that allows storing and
-    retrieving items from a dictionary with a LRU
-    removal mechanism when the limit is reached.
+    """ class represent how cash work
+        with least recently used concept
     """
+
     def __init__(self):
-        """Initializes the cache.
-        """
+        """ init magic method """
+        self.order = {}
         super().__init__()
-        self.cache_data = OrderedDict()
 
     def put(self, key, item):
-        """Adds an item in the cache.
-        """
+        """ method to add new item to dict of cache """
         if key is None or item is None:
             return
-        if key not in self.cache_data:
-            if len(self.cache_data) + 1 > BaseCaching.MAX_ITEMS:
-                lru_key, _ = self.cache_data.popitem(True)
-                print("DISCARD:", lru_key)
-            self.cache_data[key] = item
-            self.cache_data.move_to_end(key, last=False)
-        else:
-            self.cache_data[key] = item
+        if len(self.cache_data) == BaseCaching.MAX_ITEMS:
+            min_val = min(self.order.values())
+            li_keys = [k for k, v in self.order.items() if v == min_val]
+            print(f'DISCARD: {li_keys[0]}')
+            del self.cache_data[li_keys[0]]
+            del self.order[li_keys[0]]
+        self.cache_data[key] = item
+        self.order[key] = time.time()
 
     def get(self, key):
-        """Retrieves an item by key.
+        """ method to get item from cache
+            params:
+                key: key of new item
         """
-        if key is not None and key in self.cache_data:
-            self.cache_data.move_to_end(key, last=False)
+        if key in self.order:
+            self.order[key] = time.time()
         return self.cache_data.get(key, None)
